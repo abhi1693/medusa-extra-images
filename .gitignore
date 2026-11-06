@@ -4,3 +4,4 @@ coverage/
 .local/
 *.tgz
 .env*
+.idea/
