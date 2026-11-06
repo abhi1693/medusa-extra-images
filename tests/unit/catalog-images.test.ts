@@ -1,228 +1,176 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
-import type { MedusaContainer } from "@medusajs/framework/types"
+import { beforeEach, expect, it, vi } from "vitest"
 import {
   imageKind,
   imageUrl,
   readArtwork,
   saveArtwork,
 } from "../../src/catalog-images/service"
-import { artworkCommand } from "../../src/catalog-images/input"
+import {
+  artworkCommand,
+  memberMediaQuery,
+} from "../../src/catalog-images/input"
 import { CATALOG_IMAGE_RESOURCES } from "../../src/config/catalog-images-access"
-let rows: any[]
-let category: any
-let collection: any
-let images: any
-let product: any
-let scope: MedusaContainer
+let rows: any[], images: any, product: any, scope: any
 beforeEach(() => {
   rows = []
-  category = {
-    id: "pcat_a",
-    is_active: true,
-    is_internal: false,
-    metadata: { unrelated: "keep" },
-  }
-  collection = { id: "pcol_a" }
   images = {
-    imageKey: "legacy_image",
-    revisionKey: "legacy_revision",
-    listProductCollectionImages: vi.fn(async ({ product_collection_id }) =>
-      rows.filter((r) => r.product_collection_id === product_collection_id)
+    listExtraImages: vi.fn(async ({ owner_kind, owner_id }) =>
+      rows.filter(
+        (row) => row.owner_kind === owner_kind && row.owner_id === owner_id
+      )
     ),
-    createProductCollectionImages: vi.fn(async (data) => {
-      const row = { ...data, id: "colli_a" }
+    createExtraImages: vi.fn(async (data) => {
+      const row = { id: "ximg_" + rows.length, ...data }
       rows.push(row)
       return row
     }),
-    updateProductCollectionImages: vi.fn(async (data) => {
+    updateExtraImages: vi.fn(async (data) => {
       Object.assign(
-        rows.find((r) => r.id === data.id),
+        rows.find((row) => row.id === data.id),
         data
       )
       return data
     }),
   }
   product = {
-    retrieveProductCollection: vi.fn(async () => collection),
-    retrieveProductCategory: vi.fn(async () => category),
-    updateProductCategories: vi.fn(async (_id, data) =>
-      Object.assign(category, data)
-    ),
+    retrieveProductCollection: vi.fn(async () => ({ id: "pcol_a" })),
+    retrieveProductCategory: vi.fn(async () => ({
+      id: "pcat_a",
+      is_active: true,
+      is_internal: false,
+      metadata: { merchant_note: "unchanged" },
+    })),
   }
   scope = {
     resolve: (name: string) =>
       name === "product"
         ? product
         : name === "locking"
-          ? { execute: async (_key: string, action: () => any) => action() }
+          ? { execute: async (_key: string, fn: () => any) => fn() }
           : images,
-  } as unknown as MedusaContainer
+  }
 })
-describe("catalog artwork", () => {
-  it("validates owner kinds and safe existing URLs without rewriting asset bytes", () => {
-    expect(imageKind("collection")).toBe("collection")
-    expect(imageKind("category")).toBe("category")
-    expect(() => imageKind("product")).toThrow("Unknown")
-    for (const value of [
-      undefined,
-      "",
-      12,
-      "invalid",
-      "javascript:alert(1)",
-      "https://user:pass@example.com/a",
-    ])
-      expect(imageUrl(value)).toBeNull()
-    expect(imageUrl("https://example.com/a%20b.png")).toBe(
-      "https://example.com/a%20b.png"
-    )
-    expect(imageUrl("http://example.com/a.png")).toBe(
-      "http://example.com/a.png"
-    )
-    expect(artworkCommand.safeParse({ url: null, revision: "0" }).success).toBe(
-      true
-    )
-    expect(
-      artworkCommand.safeParse({
-        url: null,
-        revision: "0",
-        id: "other",
-      }).success
-    ).toBe(false)
-    expect(CATALOG_IMAGE_RESOURCES).toHaveLength(1)
-  })
-  it("creates, persists, replaces and removes one collection association without deleting any media", async () => {
-    expect(await readArtwork(scope, "collection", "pcol_a")).toEqual({
+it("validates kinds, declared payloads and safe original URLs", () => {
+  expect(imageKind("collection")).toBe("collection")
+  expect(imageKind("category")).toBe("category")
+  expect(() => imageKind("product")).toThrow("Unknown")
+  for (const value of [
+    undefined,
+    "",
+    12,
+    "invalid",
+    "javascript:alert(1)",
+    "https://user:pass@example.com/a",
+  ])
+    expect(imageUrl(value)).toBeNull()
+  expect(imageUrl("http://example.com/a.png")).toBe("http://example.com/a.png")
+  expect(imageUrl("https://example.com/a%20b.png")).toBe(
+    "https://example.com/a%20b.png"
+  )
+  expect(artworkCommand.safeParse({ url: null, revision: "0" }).success).toBe(
+    true
+  )
+  expect(
+    artworkCommand.safeParse({ url: null, revision: "0", id: "other" }).success
+  ).toBe(false)
+  expect(memberMediaQuery.parse({})).toEqual({ q: "", offset: 0 })
+  expect(memberMediaQuery.safeParse({ offset: -1 }).success).toBe(false)
+  expect(CATALOG_IMAGE_RESOURCES).toHaveLength(1)
+})
+it.each(["collection", "category"] as const)(
+  "persists, replaces and clears %s media without mutating native media or metadata",
+  async (kind) => {
+    expect(await readArtwork(scope, kind, "owner")).toEqual({
       url: null,
       revision: "0",
     })
-    const saved = await saveArtwork(scope, "collection", "pcol_a", {
+    const first = await saveArtwork(scope, kind, "owner", {
       url: "https://example.com/original.png",
       revision: "0",
     })
-    expect(await readArtwork(scope, "collection", "pcol_a")).toEqual(saved)
-    const replaced = await saveArtwork(scope, "collection", "pcol_a", {
+    expect(await readArtwork(scope, kind, "owner")).toEqual(first)
+    const second = await saveArtwork(scope, kind, "owner", {
       url: "https://example.com/replaced.png",
-      revision: saved.revision,
+      revision: first.revision,
     })
+    const clear = await saveArtwork(scope, kind, "owner", {
+      url: null,
+      revision: second.revision,
+    })
+    expect(await readArtwork(scope, kind, "owner")).toEqual(clear)
+    expect(clear.url).toBeNull()
     expect(rows).toHaveLength(1)
-    expect(images.createProductCollectionImages).toHaveBeenCalledTimes(1)
-    const removed = await saveArtwork(scope, "collection", "pcol_a", {
-      url: null,
-      revision: replaced.revision,
-    })
-    expect(removed.url).toBeNull()
-    expect((await readArtwork(scope, "collection", "pcol_a")).url).toBeNull()
-    expect(rows).toHaveLength(1)
+    expect(images.createExtraImages).toHaveBeenCalledTimes(1)
+  }
+)
+it("never selects another owner's record, even across entity kinds", async () => {
+  rows = [
+    {
+      id: "foreign",
+      owner_kind: "category",
+      owner_id: "owner",
+      url: "https://example.com/foreign.png",
+      revision: "saved",
+    },
+  ]
+  await saveArtwork(scope, "collection", "owner", {
+    url: "https://example.com/new.png",
+    revision: "0",
   })
-  it("never selects another collection's row or accepts a caller-supplied image ID", async () => {
-    rows = [
-      {
-        id: "colli_b",
-        product_collection_id: "pcol_b",
-        url: "https://example.com/b.png",
-      },
-    ]
-    await saveArtwork(scope, "collection", "pcol_a", {
-      url: "https://example.com/a.png",
+  expect(rows[0].url).toBe("https://example.com/foreign.png")
+  expect(images.updateExtraImages).not.toHaveBeenCalled()
+})
+it("refuses missing owners, stale writes, unsafe URLs and preserves records after storage failures", async () => {
+  await expect(
+    saveArtwork(scope, "collection", "owner", {
+      url: "data:image/png,a",
       revision: "0",
     })
-    expect(rows[0].url).toBe("https://example.com/b.png")
-    expect(rows).toHaveLength(2)
-    expect(images.updateProductCollectionImages).not.toHaveBeenCalled()
+  ).rejects.toThrow("HTTP")
+  await expect(
+    saveArtwork(scope, "collection", "owner", { url: null, revision: "stale" })
+  ).rejects.toThrow("Reopen")
+  product.retrieveProductCollection.mockRejectedValueOnce(
+    new Error("Owner not found")
+  )
+  await expect(readArtwork(scope, "collection", "missing")).rejects.toThrow(
+    "Owner not found"
+  )
+  images.createExtraImages.mockRejectedValueOnce(
+    new Error("Storage unavailable")
+  )
+  await expect(
+    saveArtwork(scope, "collection", "owner", { url: null, revision: "0" })
+  ).rejects.toThrow("Storage unavailable")
+  expect(rows).toHaveLength(0)
+})
+it("does not expose inactive/internal categories and ignores native metadata as an image source", async () => {
+  product.retrieveProductCategory.mockResolvedValueOnce({
+    is_active: false,
+    is_internal: false,
   })
-  it("rejects missing owners, stale writes, unsafe URLs and storage failures before losing existing artwork", async () => {
-    await expect(
-      saveArtwork(scope, "collection", "pcol_a", {
-        url: "data:image/png,a",
-        revision: "0",
-      })
-    ).rejects.toThrow("HTTP")
-    await expect(
-      saveArtwork(scope, "collection", "pcol_a", {
-        url: null,
-        revision: "stale",
-      })
-    ).rejects.toThrow("Reopen")
-    product.retrieveProductCollection.mockRejectedValueOnce(
-      new Error("Owner not found")
-    )
-    await expect(readArtwork(scope, "collection", "missing")).rejects.toThrow(
-      "Owner not found"
-    )
-    images.createProductCollectionImages.mockRejectedValueOnce(
-      new Error("Storage unavailable")
-    )
-    await expect(
-      saveArtwork(scope, "collection", "pcol_a", {
-        url: null,
-        revision: "0",
-      })
-    ).rejects.toThrow("Storage unavailable")
-    expect(rows).toHaveLength(0)
+  await expect(readArtwork(scope, "category", "owner", true)).rejects.toThrow(
+    "not found"
+  )
+  product.retrieveProductCategory.mockResolvedValueOnce({
+    is_active: true,
+    is_internal: true,
   })
-  it("reads legacy plugin rows with safe defaults and keeps unrelated metadata when replacing", async () => {
-    rows = [
-      {
-        id: "old",
-        product_collection_id: "pcol_a",
-        url: "invalid",
-        metadata: { keep: true, revision: 5 },
-      },
-    ]
-    expect(await readArtwork(scope, "collection", "pcol_a")).toEqual({
-      url: null,
-      revision: "old",
-    })
-    await saveArtwork(scope, "collection", "pcol_a", {
-      url: null,
-      revision: "old",
-    })
-    expect(rows[0].metadata.keep).toBe(true)
-    rows[0].metadata = null
-    expect((await readArtwork(scope, "collection", "pcol_a")).revision).toBe(
-      "old"
-    )
+  await expect(readArtwork(scope, "category", "owner", true)).rejects.toThrow(
+    "not found"
+  )
+  expect(await readArtwork(scope, "category", "owner", true)).toEqual({
+    url: null,
+    revision: "0",
   })
-  it("preserves native category artwork and all unrelated metadata", async () => {
-    category.metadata = {
-      ...category.metadata,
-      legacy_image: "https://example.com/existing.png",
-    }
-    expect(await readArtwork(scope, "category", category.id, true)).toEqual({
-      url: "https://example.com/existing.png",
-      revision: "0",
-    })
-    const saved = await saveArtwork(scope, "category", category.id, {
-      url: "https://example.com/next.png",
-      revision: "0",
-    })
-    expect(category.metadata.unrelated).toBe("keep")
-    expect(await readArtwork(scope, "category", category.id)).toEqual(saved)
-    const removed = await saveArtwork(scope, "category", category.id, {
-      url: null,
-      revision: saved.revision,
-    })
-    expect(removed.url).toBeNull()
-    category.metadata = null
-    expect(await readArtwork(scope, "category", category.id)).toEqual({
-      url: null,
-      revision: "0",
-    })
-  })
-  it("does not expose private or inactive categories on the Store API", async () => {
-    category.is_active = false
-    await expect(
-      readArtwork(scope, "category", category.id, true)
-    ).rejects.toThrow("not found")
-    category.is_active = true
-    category.is_internal = true
-    await expect(
-      readArtwork(scope, "category", category.id, true)
-    ).rejects.toThrow("not found")
-    expect((await readArtwork(scope, "category", category.id)).url).toBeNull()
-    category.metadata = { legacy_revision: 9 }
-    expect((await readArtwork(scope, "category", category.id)).revision).toBe(
-      "0"
-    )
-  })
+  rows = [
+    {
+      id: "bad",
+      owner_kind: "category",
+      owner_id: "owner",
+      url: "invalid",
+      revision: "saved",
+    },
+  ]
+  expect((await readArtwork(scope, "category", "owner")).url).toBeNull()
 })

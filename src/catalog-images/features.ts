@@ -4,7 +4,7 @@ export function imageFeatures(scope: MedusaContainer) {
   const service = scope.resolve<{
     categoriesEnabled?: boolean
     collectionsEnabled?: boolean
-  }>("product_collection_image")
+  }>("extra_images")
   return {
     categories: service.categoriesEnabled !== false,
     collections: service.collectionsEnabled !== false,

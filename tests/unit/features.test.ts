@@ -11,7 +11,7 @@ it("supports every independent option combination and rejects disabled data acce
       const native = vi.fn(),
         scope: any = {
           resolve: (key: string) =>
-            key === "product_collection_image"
+            key === "extra_images"
               ? { categoriesEnabled, collectionsEnabled }
               : {
                   retrieveProductCollection: native,
@@ -69,30 +69,23 @@ it("returns only feature flags to existing authenticated staff", async () => {
   )
 })
 
-it("re-enabling either feature reveals its unchanged saved selection", async () => {
+it("re-enabling reveals unchanged owned records", async () => {
   const storage = {
     categoriesEnabled: true,
     collectionsEnabled: true,
-    imageKey: "chosen",
-    revisionKey: "revision",
-    listProductCollectionImages: async () => [
-      {
-        id: "owned",
-        url: "https://example.com/collection.png",
-        metadata: { revision: "saved" },
-      },
+    listExtraImages: async () => [
+      { id: "owned", url: "https://example.com/chosen.png", revision: "saved" },
     ],
-  }
-  const category = {
-    id: "category",
-    metadata: { chosen: "https://example.com/category.png", revision: "saved" },
   }
   const scope: any = {
     resolve: (key: string) =>
-      key === "product_collection_image"
+      key === "extra_images"
         ? storage
         : {
-            retrieveProductCategory: async () => category,
+            retrieveProductCategory: async () => ({
+              is_active: true,
+              is_internal: false,
+            }),
             retrieveProductCollection: async () => ({ id: "collection" }),
           },
   }

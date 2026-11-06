@@ -7,6 +7,6 @@ export default function CategoryArtwork({
   return <CatalogArtwork key={data.id} kind="category" id={data.id} />
 }
 export const config = defineWidgetConfig({
-  zone: "product_category.details",
+  zone: "product_category.details.side",
   id: "extra-images:category-artwork",
 })

@@ -33,20 +33,13 @@ plugins: [
   {
     resolve: "@abhi1693/medusa-extra-images",
     options: {
-      // Optional compatibility keys for an existing application's category metadata.
       enableCategories: true,
-      enableCollections: true,
-      categoryImageKey: "merchant_category_image",
-      categoryRevisionKey: "merchant_category_revision",
-    },
+    enableCollections: true,
   },
 ]
 ```
 
-New applications can omit the options; defaults are
-`extra_images_category_image` and `extra_images_category_revision`.
-Category writes use the owning native Product module and preserve unrelated
-metadata. Optional `@abhi1693/medusa-rbac` integration: spread
+The plugin owns category and collection image records in its extra_image table. It does not read or write native category metadata. Optional `@abhi1693/medusa-rbac` integration: spread
 `CATALOG_IMAGE_RESOURCES` from `@abhi1693/medusa-extra-images/rbac` into
 the configured resources. Reads/writes use categories.view/manage or
 collections.view/manage; media browsing also requires products.view.
@@ -57,27 +50,24 @@ native publishable-key middleware and exclude inactive/internal categories.
 The Admin SDK uses the consuming Admin's backend URL, session/JWT mode and token
 storage key. No additional Router version is installed.
 
-## Storage compatibility and safe rollout
+## Owned storage and rollout
 
-The owned collection module deliberately retains the historical DI key
-`product_collection_image`, table/column schema and migration identifier
-`Migration20250704070026`. This supports replacing an earlier compatible module
-without rewriting existing rows or deleting its non-selected rows. The module
-is owned implementation, with no dependency on Alphabite.
+The extra_images module owns one extra_image record per category or collection
+through a unique (owner_kind, owner_id) key. Native Product module services
+validate entity existence; the plugin never writes native catalog tables.
+Clear selections retain a revision tombstone. There are no application-specific
+metadata keys, old-plugin schemas, migration imports or runtime compatibility
+fallbacks in this plugin. A consuming application's explicit one-time import may
+use the public trusted saveArtwork server API; migration policies/data belong in
+that application, outside this repository.
 
-Only one module may own that historical key. Remove the previous plugin/module
-registration before registering this plugin. Back up the database, inspect its
-schema/migration record, and rehearse against a restored disposable copy before
-changing an existing runtime. No automatic import/population/seed runs at startup.
-The initial migration uses CREATE IF NOT EXISTS. Its down operation refuses to
-drop media data; roll back application code using the compatible retained schema,
-or restore a reviewed backup.
+Back up and rehearse native migrations before rollout. The migration creates only
+this module's own table and index. Its down operation refuses to delete image data.
 
-Category compatibility is explicit through the options above; there is no
-runtime legacy fallback. Existing clears carry revision tombstones, so an
-application's one-time population must skip them. The plugin's public trusted
-server APIs `readArtwork`/`saveArtwork` are available at `/service` for
-application-owned migration tooling. HTTP selection always validates membership.
+Category widgets use the supported product_category.details.side zone after
+Organize. Medusa 2.22.2 exposes no collection sidebar widget zone; the collection
+widget uses the supported product_collection.details main-column zone. No
+Dashboard/core patch or unsupported injection zone is used.
 
 Writes use the configured public Medusa Locking module and optimistic revisions.
 Use a shared durable provider for multiple backend processes. Invalid/stale writes

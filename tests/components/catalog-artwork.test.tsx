@@ -99,7 +99,7 @@ beforeEach(() => {
 afterEach(cleanup)
 it("uses native Media presentation and scoped selection without unwanted controls", async () => {
   expect(collectionConfig.zone).toBe("product_collection.details")
-  expect(categoryConfig.zone).toBe("product_category.details")
+  expect(categoryConfig.zone).toBe("product_category.details.side")
   const { user } = mount()
   expect(screen.getByText("Loading media…")).toBeInTheDocument()
   await screen.findByRole("button", { name: "Change collection image" })

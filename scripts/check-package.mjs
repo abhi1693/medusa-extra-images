@@ -7,7 +7,7 @@ for (const path of [
   "catalog-images/service",
   "catalog-images/media",
   "config/catalog-images-access",
-  "modules/product-collection-image/index",
+  "modules/extra-images/index",
 ]) {
   assert.ok(
     fs.existsSync(".medusa/server/src/" + path + ".d.ts"),
