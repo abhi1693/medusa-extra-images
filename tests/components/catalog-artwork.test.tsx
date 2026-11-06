@@ -1,3 +1,4 @@
+import CatalogArtwork from "../../src/admin/components/catalog-artwork"
 import { afterEach, beforeEach, expect, it, vi } from "vitest"
 import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
@@ -67,11 +68,10 @@ function mount(kind = "collection") {
     user: userEvent.setup(),
     ...render(
       <QueryClientProvider client={client}>
-        {kind === "collection" ? (
-          <Collection data={{ id: "pcol_a" } as any} />
-        ) : (
-          <Category data={{ id: "pcat_a" } as any} />
-        )}
+        <CatalogArtwork
+          kind={kind as "collection" | "category"}
+          id={kind === "collection" ? "pcol_a" : "pcat_a"}
+        />
       </QueryClientProvider>
     ),
   }

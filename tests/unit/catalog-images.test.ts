@@ -24,8 +24,8 @@ beforeEach(() => {
   }
   collection = { id: "pcol_a" }
   images = {
-    imageKey: "shop_by_need_image",
-    revisionKey: "uniek_artwork_revision",
+    imageKey: "legacy_image",
+    revisionKey: "legacy_revision",
     listProductCollectionImages: vi.fn(async ({ product_collection_id }) =>
       rows.filter((r) => r.product_collection_id === product_collection_id)
     ),
@@ -186,7 +186,7 @@ describe("catalog artwork", () => {
   it("preserves native category artwork and all unrelated metadata", async () => {
     category.metadata = {
       ...category.metadata,
-      shop_by_need_image: "https://example.com/existing.png",
+      legacy_image: "https://example.com/existing.png",
     }
     expect(await readArtwork(scope, "category", category.id, true)).toEqual({
       url: "https://example.com/existing.png",
@@ -220,7 +220,7 @@ describe("catalog artwork", () => {
       readArtwork(scope, "category", category.id, true)
     ).rejects.toThrow("not found")
     expect((await readArtwork(scope, "category", category.id)).url).toBeNull()
-    category.metadata = { uniek_artwork_revision: 9 }
+    category.metadata = { legacy_revision: 9 }
     expect((await readArtwork(scope, "category", category.id)).revision).toBe(
       "0"
     )

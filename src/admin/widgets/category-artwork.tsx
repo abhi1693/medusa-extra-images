@@ -1,6 +1,6 @@
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
 import type { DetailWidgetProps, HttpTypes } from "@medusajs/framework/types"
-import CatalogArtwork from "../components/catalog-artwork"
+import CatalogArtwork from "../components/feature-artwork"
 export default function CategoryArtwork({
   data,
 }: DetailWidgetProps<HttpTypes.AdminProductCategory>) {

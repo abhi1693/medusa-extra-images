@@ -1,6 +1,6 @@
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
 import type { DetailWidgetProps, HttpTypes } from "@medusajs/framework/types"
-import CatalogArtwork from "../components/catalog-artwork"
+import CatalogArtwork from "../components/feature-artwork"
 export default function CollectionArtwork({
   data,
 }: DetailWidgetProps<HttpTypes.AdminCollection>) {

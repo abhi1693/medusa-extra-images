@@ -9,6 +9,11 @@ import { guard } from "./guard"
 export default defineMiddlewares({
   routes: [
     {
+      matcher: "/admin/catalog-images/config",
+      method: "GET",
+      middlewares: [authenticate("user", ["session", "bearer"])],
+    },
+    {
       matcher: "/admin/catalog-images/:kind/:id",
       middlewares: [authenticate("user", ["session", "bearer"]), guard],
     },

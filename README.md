@@ -34,8 +34,10 @@ plugins: [
     resolve: "@abhi1693/medusa-extra-images",
     options: {
       // Optional compatibility keys for an existing application's category metadata.
-      categoryImageKey: "shop_by_need_image",
-      categoryRevisionKey: "uniek_artwork_revision",
+      enableCategories: true,
+      enableCollections: true,
+      categoryImageKey: "merchant_category_image",
+      categoryRevisionKey: "merchant_category_revision",
     },
   },
 ]
@@ -120,3 +122,7 @@ parity. The custom selector is a widget modal rather than a native product route
 
 No credentials, merchant catalog exports, backups or runtime uploads belong in
 this public repository.
+
+### Independent feature options
+
+Both features default to enabled. Set enableCategories and enableCollections independently: true/true enables both, true/false categories only, false/true collections only, false/false neither. Disabled API reads/writes return 404 and their Admin widgets render nothing. Toggling options never deletes or rewrites saved images; re-enabling reveals the saved selection. Restart the backend and refresh Admin after configuration changes. GET /admin/catalog-images/config exposes only these flags to authenticated staff.

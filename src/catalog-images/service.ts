@@ -1,3 +1,4 @@
+import { assertImageFeature } from "./features"
 import type {
   MedusaContainer,
   IProductModuleService,
@@ -71,6 +72,7 @@ export async function readArtwork(
   id: string,
   publicOnly = false
 ): Promise<Artwork> {
+  assertImageFeature(scope, kind)
   const { record } = await owner(scope, kind, id, publicOnly)
   if (kind === "category") {
     const { imageKey, revisionKey } = scope.resolve<{
@@ -111,6 +113,7 @@ export async function saveArtwork(
   id: string,
   command: ImageCommand
 ): Promise<Artwork> {
+  assertImageFeature(scope, kind)
   if (command.url !== null && !imageUrl(command.url))
     throw new MedusaError(
       MedusaError.Types.INVALID_DATA,

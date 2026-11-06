@@ -4,6 +4,7 @@ export const CATALOG_IMAGE_RESOURCES = [
     root: "catalog-images",
     actorTypes: ["user"] as ["user"],
     operations: {
+      config_read: { permissions: [] },
       collections_read: { permissions: ["collections.view"] },
       collections_write: { permissions: ["collections.manage"] },
       collections_media: { permissions: ["collections.view", "products.view"] },
@@ -13,6 +14,7 @@ export const CATALOG_IMAGE_RESOURCES = [
     },
     profile: {
       children: {
+        config: { actions: { GET: "config_read" } },
         collection: {
           item: {
             parameter: "id",

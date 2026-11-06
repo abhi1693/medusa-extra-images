@@ -7,3 +7,5 @@ export {
 } from "./catalog-images/service"
 export type { Artwork, ImageKind, ImageCommand } from "./catalog-images/service"
 export { listMemberMedia, saveSelectedArtwork } from "./catalog-images/media"
+export { imageFeatures } from "./catalog-images/features"
+export type { ExtraImageOptions } from "./modules/product-collection-image/service"

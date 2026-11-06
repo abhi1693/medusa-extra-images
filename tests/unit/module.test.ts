@@ -23,13 +23,19 @@ it("owns the compatible collection model and exposes stable public APIs", () => 
   const fresh = new Service({})
   expect(fresh.imageKey).toBe("extra_images_category_image")
   expect(fresh.revisionKey).toBe("extra_images_category_revision")
+  for (const enableCategories of [false, true])
+    for (const enableCollections of [false, true]) {
+      const service = new Service({}, { enableCategories, enableCollections })
+      expect(service.categoriesEnabled).toBe(enableCategories)
+      expect(service.collectionsEnabled).toBe(enableCollections)
+    }
   const legacy = new Service(
     {},
     {
-      categoryImageKey: "shop_by_need_image",
-      categoryRevisionKey: "uniek_artwork_revision",
+      categoryImageKey: "legacy_image",
+      categoryRevisionKey: "legacy_revision",
     }
   )
-  expect(legacy.imageKey).toBe("shop_by_need_image")
-  expect(legacy.revisionKey).toBe("uniek_artwork_revision")
+  expect(legacy.imageKey).toBe("legacy_image")
+  expect(legacy.revisionKey).toBe("legacy_revision")
 })
