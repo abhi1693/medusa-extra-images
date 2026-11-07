@@ -1,5 +1,8 @@
 name: Plugin checks
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  workflow_call:
 permissions:
   contents: read
 jobs:
@@ -12,3 +15,13 @@ jobs:
       - run: docker compose run --rm tools npm run format:check
       - run: docker compose run --rm tools npm test
       - run: docker compose run --rm tools sh -c 'npm run build && npm run test:package'
+      - name: Load shared archive verifier
+        id: release-tools
+        uses: abhi1693/actions/.github/actions/npm-release@02c926a5d737bb3abca05788c5cea8a2b0b8767b # v1.1.1
+      - name: Check actual release archive
+        env:
+          TOOLS: ${{ steps.release-tools.outputs.path }}
+        run: >-
+          docker compose run --rm -v "$TOOLS:/release-tools:ro"
+          -e PACKAGE_NAME=@abhi1693/medusa-extra-images tools
+          sh -ec 'npm run build && npm run test:package && node /release-tools/package.mjs --check-only'

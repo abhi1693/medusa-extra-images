@@ -1,5 +1,10 @@
 # Medusa Extra Images
 
+[![CI](https://github.com/abhi1693/medusa-extra-images/actions/workflows/checks.yml/badge.svg?branch=master)](https://github.com/abhi1693/medusa-extra-images/actions/workflows/checks.yml)
+[![Medusa 2.22.2](https://img.shields.io/badge/Medusa-2.22.2-7c3aed)](https://docs.medusajs.com/)
+[![MIT license](https://img.shields.io/github/license/abhi1693/medusa-extra-images)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/Sponsor-abhi1693-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/abhi1693)
+
 Collection and category images chosen from their native member-product media.
 Medusa **2.22.2**, UI **4.2.9**, React **18.3.1** and Router **7** consuming Admin.
 
@@ -34,7 +39,8 @@ plugins: [
     resolve: "@abhi1693/medusa-extra-images",
     options: {
       enableCategories: true,
-    enableCollections: true,
+      enableCollections: true,
+    },
   },
 ]
 ```
@@ -116,3 +122,13 @@ this public repository.
 ### Independent feature options
 
 Both features default to enabled. Set enableCategories and enableCollections independently: true/true enables both, true/false categories only, false/true collections only, false/false neither. Disabled API reads/writes return 404 and their Admin widgets render nothing. Toggling options never deletes or rewrites saved images; re-enabling reveals the saved selection. Restart the backend and refresh Admin after configuration changes. GET /admin/catalog-images/config exposes only these flags to authenticated staff.
+
+## Release preparation
+
+The shared `abhi1693/actions@v1` workflows prepare a signed draft archive and publish that same verified archive with npm OIDC. Normal CI does not publish. Before dispatching `release.yml`, commit matching package and lockfile versions and `docs/releases/VERSION.md` notes. Publishing a stable draft triggers `publish.yml`; its manual dispatch recovers a published tag from `master`.
+
+Configure npm ownership and trusted publishing for this repository and workflow `publish.yml` before publication. No environment or registry token is configured by this migration. Package-specific Server/Admin consumer checks remain part of preparation; generic archive, checksum, source and provenance verification stays in the shared actions repository.
+
+## License
+
+[MIT](LICENSE)
