@@ -22,6 +22,21 @@ export async function guard(
   res: MedusaResponse,
   next: MedusaNextFunction
 ) {
+  return authorize(req, res, next, false)
+}
+export async function mediaGuard(
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction
+) {
+  return authorize(req, res, next, true)
+}
+async function authorize(
+  req: MedusaRequest,
+  res: MedusaResponse,
+  next: MedusaNextFunction,
+  media: boolean
+) {
   try {
     const auth = (req as AuthenticatedMedusaRequest).auth_context
     if (auth?.actor_type !== "user" || !auth.actor_id)
@@ -39,7 +54,7 @@ export async function guard(
       const permissions =
         req.method === "POST"
           ? [root + ".manage"]
-          : req.path.endsWith("/media")
+          : media
             ? [root + ".view", "products.view"]
             : [root + ".view"]
       if (

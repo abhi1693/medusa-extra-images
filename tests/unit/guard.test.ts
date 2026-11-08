@@ -1,5 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest"
-import { guard } from "../../src/api/guard"
+import { guard, mediaGuard } from "../../src/api/guard"
+import middlewares from "../../src/api/middlewares"
 const user = vi.fn(),
   allows = vi.fn(),
   principal = vi.fn(),
@@ -68,7 +69,7 @@ it("checks entity permissions and requires product view for member media", async
   )
   req.method = "GET"
   req.path += "/media"
-  await guard(req, res, next)
+  await mediaGuard(req, res, next)
   expect(allows).toHaveBeenLastCalledWith(expect.anything(), "products.view", {
     trusted: true,
   })
@@ -105,3 +106,32 @@ it("does not broaden unknown operations or swallow ownership failures", async ()
     expect.objectContaining({ message: "Missing staff" })
   )
 })
+
+it.each(["collection", "category"])(
+  "requires product view for every %s media path variant",
+  async (kind) => {
+    const route = middlewares.routes!.find(
+      (entry) => entry.matcher === "/admin/catalog-images/:kind/:id/media"
+    )!
+    expect(route.middlewares).toContain(mediaGuard)
+    req.params.kind = kind
+    allows.mockImplementation(
+      (_principal, permission) => permission !== "products.view"
+    )
+    for (const suffix of ["media", "media/", "MEDIA", "MEDIA/"]) {
+      req.path = `/admin/catalog-images/${kind}/owner/${suffix}`
+      next.mockClear()
+      await mediaGuard(req, res, next)
+      expect(allows).toHaveBeenLastCalledWith(
+        expect.anything(),
+        "products.view",
+        { trusted: true }
+      )
+      expect(res.status).toHaveBeenLastCalledWith(403)
+      expect(next).not.toHaveBeenCalled()
+    }
+    allows.mockReturnValue(true)
+    await mediaGuard(req, res, next)
+    expect(next).toHaveBeenCalledWith()
+  }
+)
