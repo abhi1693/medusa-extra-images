@@ -1,5 +1,10 @@
 # Medusa Extra Images
 
+[![CI](https://github.com/abhi1693/medusa-extra-images/actions/workflows/checks.yml/badge.svg?branch=master)](https://github.com/abhi1693/medusa-extra-images/actions/workflows/checks.yml)
+[![Medusa 2.22.2](https://img.shields.io/badge/Medusa-2.22.2-7c3aed)](https://docs.medusajs.com/)
+[![MIT license](https://img.shields.io/github/license/abhi1693/medusa-extra-images)](LICENSE)
+[![Sponsor](https://img.shields.io/badge/Sponsor-abhi1693-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/abhi1693)
+
 Collection and category images chosen from their native member-product media.
 Medusa **2.22.2**, UI **4.2.9**, React **18.3.1** and Router **7** consuming Admin.
 
@@ -24,9 +29,22 @@ or failed image loads.
 
 ## Installation
 
-Install the repository at an exact reviewed commit (this project is not published
-to npm). Approve only this package's reviewed prepare build when using npm's
-`allowScripts`. Register the full plugin, not just its module:
+The first npm release is `@abhi1693/medusa-extra-images@0.0.1`. Once available,
+install it with:
+
+```sh
+npm install @abhi1693/medusa-extra-images@0.0.1
+```
+
+To install a source revision, pin a reviewed commit:
+
+```sh
+npm install 'git+https://github.com/abhi1693/medusa-extra-images.git#<commit>'
+```
+
+Git dependencies run `prepare` to build the plugin. Approve only this package's
+reviewed prepare build when using npm's `allowScripts`. Register the full plugin,
+not just its module:
 
 ```ts
 plugins: [
@@ -34,7 +52,8 @@ plugins: [
     resolve: "@abhi1693/medusa-extra-images",
     options: {
       enableCategories: true,
-    enableCollections: true,
+      enableCollections: true,
+    },
   },
 ]
 ```
@@ -116,3 +135,7 @@ this public repository.
 ### Independent feature options
 
 Both features default to enabled. Set enableCategories and enableCollections independently: true/true enables both, true/false categories only, false/true collections only, false/false neither. Disabled API reads/writes return 404 and their Admin widgets render nothing. Toggling options never deletes or rewrites saved images; re-enabling reveals the saved selection. Restart the backend and refresh Admin after configuration changes. GET /admin/catalog-images/config exposes only these flags to authenticated staff.
+
+## License
+
+[MIT](LICENSE)
