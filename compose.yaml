@@ -1,0 +1,20 @@
+name: medusa-extra-images
+services:
+  tools:
+    image: medusa-extra-images:dev
+    build: .
+    init: true
+  format:
+    image: medusa-extra-images:dev
+    user: "1000:1000"
+    volumes:
+      - ./src:/plugin/src
+      - ./tests:/plugin/tests
+      - ./scripts:/plugin/scripts
+      - ./README.md:/plugin/README.md
+      - ./package.json:/plugin/package.json
+      - ./package-lock.json:/plugin/package-lock.json
+      - ./tsconfig.json:/plugin/tsconfig.json
+      - ./tsconfig.test.json:/plugin/tsconfig.test.json
+      - ./vitest.config.mts:/plugin/vitest.config.mts
+    command: ["npm", "run", "format"]

@@ -1,0 +1,14 @@
+name: Plugin checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose build tools
+      - run: docker compose run --rm tools npm run typecheck
+      - run: docker compose run --rm tools npm run format:check
+      - run: docker compose run --rm tools npm test
+      - run: docker compose run --rm tools sh -c 'npm run build && npm run test:package'
