@@ -29,9 +29,22 @@ or failed image loads.
 
 ## Installation
 
-Install the repository at an exact reviewed commit (this project is not published
-to npm). Approve only this package's reviewed prepare build when using npm's
-`allowScripts`. Register the full plugin, not just its module:
+The first npm release is `@abhi1693/medusa-extra-images@0.0.1`. Once available,
+install it with:
+
+```sh
+npm install @abhi1693/medusa-extra-images@0.0.1
+```
+
+To install a source revision, pin a reviewed commit:
+
+```sh
+npm install 'git+https://github.com/abhi1693/medusa-extra-images.git#<commit>'
+```
+
+Git dependencies run `prepare` to build the plugin. Approve only this package's
+reviewed prepare build when using npm's `allowScripts`. Register the full plugin,
+not just its module:
 
 ```ts
 plugins: [
