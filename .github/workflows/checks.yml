@@ -17,7 +17,7 @@ jobs:
       - run: docker compose run --rm tools sh -c 'npm run build && npm run test:package'
       - name: Load shared archive verifier
         id: release-tools
-        uses: abhi1693/actions/.github/actions/npm-release@02c926a5d737bb3abca05788c5cea8a2b0b8767b # v1.1.1
+        uses: abhi1693/actions/.github/actions/npm-release@428c8e48880754633e3b4e4f1c90c3fdc876effa # v1.1.2
       - name: Check actual release archive
         env:
           TOOLS: ${{ steps.release-tools.outputs.path }}

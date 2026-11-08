@@ -123,12 +123,6 @@ this public repository.
 
 Both features default to enabled. Set enableCategories and enableCollections independently: true/true enables both, true/false categories only, false/true collections only, false/false neither. Disabled API reads/writes return 404 and their Admin widgets render nothing. Toggling options never deletes or rewrites saved images; re-enabling reveals the saved selection. Restart the backend and refresh Admin after configuration changes. GET /admin/catalog-images/config exposes only these flags to authenticated staff.
 
-## Release preparation
-
-The shared `abhi1693/actions@v1` workflows prepare a signed draft archive and publish that same verified archive with npm OIDC. Normal CI does not publish. Before dispatching `release.yml`, commit matching package and lockfile versions and `docs/releases/VERSION.md` notes. Publishing a stable draft triggers `publish.yml`; its manual dispatch recovers a published tag from `master`.
-
-Configure npm ownership and trusted publishing for this repository and workflow `publish.yml` before publication. No environment or registry token is configured by this migration. Package-specific Server/Admin consumer checks remain part of preparation; generic archive, checksum, source and provenance verification stays in the shared actions repository.
-
 ## License
 
 [MIT](LICENSE)
