@@ -5,7 +5,7 @@ import {
   validateAndTransformQuery,
 } from "@medusajs/framework/http"
 import { artworkCommand, memberMediaQuery } from "../catalog-images/input"
-import { guard } from "./guard"
+import { guard, mediaGuard } from "./guard"
 export default defineMiddlewares({
   routes: [
     {
@@ -27,7 +27,7 @@ export default defineMiddlewares({
       method: "GET",
       middlewares: [
         authenticate("user", ["session", "bearer"]),
-        guard,
+        mediaGuard,
         validateAndTransformQuery(memberMediaQuery, {}),
       ],
     },
