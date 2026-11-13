@@ -168,3 +168,22 @@ it("preserves direct member filter compatibility", () => {
     categories: { id: "owner" },
   })
 })
+
+it("visits duplicate-ID nodes with distinct descendant branches", async () => {
+  categories.mockResolvedValue([
+    {
+      id: "owner",
+      category_children: [
+        {
+          id: "child",
+          category_children: [{ id: "deep", category_children: [] }],
+        },
+        { id: "child", category_children: [] },
+      ],
+    },
+  ])
+  await listMemberMedia(scope, "category", "owner", "", 0)
+  expect(new Set(many.mock.calls[0][0].categories.id)).toEqual(
+    new Set(["owner", "child", "deep"])
+  )
+})

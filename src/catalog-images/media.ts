@@ -22,12 +22,12 @@ async function scopedMemberFilter(
       { take: 1, relations: ["category_children"] }
     )
   const ids = new Set<string>([id])
-  const visited = new Set<string>()
+  const visited = new Set<ProductCategoryDTO>()
   const pending: ProductCategoryDTO[] = [...roots]
   while (pending.length) {
     const category = pending.pop()!
-    if (visited.has(category.id)) continue
-    visited.add(category.id)
+    if (visited.has(category)) continue
+    visited.add(category)
     ids.add(category.id)
     pending.push(...(category.category_children ?? []))
   }
