@@ -17,8 +17,9 @@ Dashboard components. One selected image is associated with each collection
 or category. Its original URL is reused; no file is uploaded or duplicated.
 
 The selector searches/paginates only products in the current collection or
-direct category membership. It does not include descendants or a related-products
-plugin. The backend rechecks product membership and image ownership at save time.
+category and all nested subcategories. Products linked to multiple categories
+appear once with native server-side search and pagination. It does not include
+a related-products plugin. The backend rechecks product membership and image ownership at save time.
 An existing selection survives later product membership changes, and can be
 replaced or cleared. Source product media and thumbnails are never mutated.
 
@@ -139,3 +140,24 @@ Both features default to enabled. Set enableCategories and enableCollections ind
 ## License
 
 [MIT](LICENSE)
+
+### Nested category media validation (2026-11-13)
+
+The picker and save-time ownership check resolve the selected category with
+the public Product Module `listProductCategories` API using
+`include_descendants_tree: true`. The resulting IDs (including the root) are
+deduplicated and passed to one native `listAndCountProducts` / `listProducts`
+query, so search, distinct products, counts and pagination remain server-side.
+Collection behavior and staff/RBAC guards are unchanged.
+
+References:
+
+- https://docs.medusajs.com/resources/references/product/listProductCategories
+- https://docs.medusajs.com/resources/references/product/listAndCountProducts
+
+Inspected the installed 2.22.2 ProductCategoryService/repository and public types;
+verified the same query read-only in a consuming Medusa 2.22.4 demo.
+Regression tests cover direct members, deep descendants, duplicate category
+references, unchanged collection filtering, saved media ownership and a product
+moved outside the subtree. The plugin tests, typecheck, build and package-export
+checks run through Docker Compose.
