@@ -53,7 +53,8 @@ export default function ExistingMediaPicker({
           }}
         />
         <Text size="small" className="text-ui-fg-subtle">
-          Images from products in this {kind}.
+          Images from products in this {kind}
+          {kind === "category" ? " and its subcategories" : ""}.
         </Text>
       </div>
       {products.isPending ? (
