@@ -151,6 +151,7 @@ query, so search, distinct products, counts and pagination remain server-side.
 Collection behavior and staff/RBAC guards are unchanged.
 
 References:
+
 - https://docs.medusajs.com/resources/references/product/listProductCategories
 - https://docs.medusajs.com/resources/references/product/listAndCountProducts
 
