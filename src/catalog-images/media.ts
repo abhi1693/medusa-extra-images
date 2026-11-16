@@ -1,12 +1,39 @@
 import type {
   MedusaContainer,
   IProductModuleService,
+  ProductCategoryDTO,
 } from "@medusajs/framework/types"
 import { MedusaError, Modules } from "@medusajs/framework/utils"
 import { readArtwork, saveArtwork } from "./service"
 import type { ImageKind, ImageCommand } from "./service"
 export function memberFilter(kind: ImageKind, id: string) {
   return kind === "collection" ? { collection_id: id } : { categories: { id } }
+}
+async function scopedMemberFilter(
+  scope: MedusaContainer,
+  kind: ImageKind,
+  id: string
+) {
+  if (kind === "collection") return memberFilter(kind, id)
+  const roots = await scope
+    .resolve<IProductModuleService>(Modules.PRODUCT)
+    .listProductCategories(
+      { id, include_descendants_tree: true },
+      { take: 1, relations: ["category_children"] }
+    )
+  const ids = new Set<string>([id])
+  const visited = new Set<ProductCategoryDTO>()
+  const pending: ProductCategoryDTO[] = [...roots]
+  while (pending.length) {
+    const category = pending.pop()!
+    if (visited.has(category)) continue
+    visited.add(category)
+    ids.add(category.id)
+    pending.push(...(category.category_children ?? []))
+  }
+  // A single native product query keeps product identity, count and pagination
+  // distinct even when a product belongs to several categories in the subtree.
+  return { categories: { id: [...ids] } }
 }
 export async function listMemberMedia(
   scope: MedusaContainer,
@@ -19,7 +46,7 @@ export async function listMemberMedia(
   const [products, count] = await scope
     .resolve<IProductModuleService>(Modules.PRODUCT)
     .listAndCountProducts(
-      { ...memberFilter(kind, id), q },
+      { ...(await scopedMemberFilter(scope, kind, id)), q },
       {
         relations: ["images"],
         take: 12,
@@ -53,7 +80,10 @@ export async function saveSelectedArtwork(
     const products = await scope
       .resolve<IProductModuleService>(Modules.PRODUCT)
       .listProducts(
-        { ...memberFilter(kind, id), id: command.product_id },
+        {
+          ...(await scopedMemberFilter(scope, kind, id)),
+          id: command.product_id,
+        },
         { relations: ["images"], take: 1 }
       )
     if (
