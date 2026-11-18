@@ -30,11 +30,10 @@ or failed image loads.
 
 ## Installation
 
-The first npm release is `@abhi1693/medusa-extra-images@0.0.1`. Once available,
-install it with:
+Install the plugin from npm.
 
 ```sh
-npm install @abhi1693/medusa-extra-images@0.0.1
+npm install @abhi1693/medusa-extra-images@0.0.3
 ```
 
 To install a source revision, pin a reviewed commit:
