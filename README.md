@@ -1,12 +1,12 @@
 # Medusa Extra Images
 
 [![CI](https://github.com/abhi1693/medusa-extra-images/actions/workflows/checks.yml/badge.svg?branch=master)](https://github.com/abhi1693/medusa-extra-images/actions/workflows/checks.yml)
-[![Medusa 2.22.2](https://img.shields.io/badge/Medusa-2.22.2-7c3aed)](https://docs.medusajs.com/)
+[![Medusa 2.23.0](https://img.shields.io/badge/Medusa-2.23.0-7c3aed)](https://docs.medusajs.com/)
 [![MIT license](https://img.shields.io/github/license/abhi1693/medusa-extra-images)](LICENSE)
 [![Sponsor](https://img.shields.io/badge/Sponsor-abhi1693-ea4aaa?logo=githubsponsors&logoColor=white)](https://github.com/sponsors/abhi1693)
 
 Collection and category images chosen from their native member-product media.
-Medusa **2.22.2**, UI **4.2.9**, React **18.3.1** and Router **7** consuming Admin.
+Medusa **2.23.0**, UI **4.3.0**, React **19.3.1** and Router **7** consuming Admin.
 
 ## Behavior
 
